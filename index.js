@@ -1,7 +1,5 @@
 'use strict';
 
-const semver = require('semver');
-
 // Node version check
 const nodeVersion = process.version;
 if (parseInt(nodeVersion.slice(1)) < 18) {
@@ -23,7 +21,6 @@ process.on('unhandledRejection', (reason) => {
 const args = process.argv.slice(2);
 
 async function main() {
-  // --help
   if (args.includes('--help') || args.includes('-h')) {
     console.log(`
 CLI Service Manager v1.0.0
@@ -42,7 +39,6 @@ State:      ./state/session.yaml
     process.exit(0);
   }
 
-  // --export-zip
   if (args.includes('--export-zip')) {
     try {
       const { exportZip } = require('./src/core/changelog-writer');
@@ -54,7 +50,6 @@ State:      ./state/session.yaml
     return;
   }
 
-  // Main interactive mode
   try {
     const { runMainMenu } = require('./src/cli/menu');
     await runMainMenu();

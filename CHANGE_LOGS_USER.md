@@ -1,3 +1,22 @@
+## [2026-03-27 03:00:00] Hoàn thiện Supabase Plugin — TASK-07
+
+Đã implement thành công plugin `services/supabase.js` theo chuẩn interface của hệ thống:
+
+**Những gì đã làm:**
+- 5 actions đầy đủ: `listProjects`, `createProject`, `getProjectApiKeys`, `pauseProject`, `restoreProject`
+- Gọi Supabase Management API (`api.supabase.com/v1`), không dùng client SDK
+- Timeout 30s mỗi API call, parse lỗi rõ (HTTP status + message)
+- Sửa `changelog-writer.js`: stepSummary dùng emoji ✅/❌ đúng spec, header dùng em-dash `—`
+- Tạo `configs/supabase.example.yaml` với đầy đủ fields và comment hướng dẫn
+
+**Quick verify:**
+```bash
+node -e "const s=require('./services/supabase'); console.log(Object.keys(s.actions))"
+# → [ 'listProjects', 'createProject', 'getProjectApiKeys', 'pauseProject', 'restoreProject' ]
+```
+
+---
+
 ## [2026-03-27 02:20:00] Khởi tạo CLI Service Manager — Hoàn thành lõi hệ thống
 
 Đã xây dựng thành công phần lõi của CLI Service Manager với đầy đủ các tính năng nền tảng:
@@ -16,3 +35,4 @@
 - File task mẫu Supabase (đang build — TASK-08)
 
 ---
+

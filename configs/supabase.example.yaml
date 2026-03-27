@@ -1,0 +1,28 @@
+# Supabase Management API Config
+# Huong dan: Copy file nay thanh configs/supabase.yaml va dien credentials
+
+service: supabase
+
+# Last used (tu dong cap nhat sau moi lan chay)
+last_used:
+  profile: default
+  action: listProjects
+  task: supabase-example
+
+profiles:
+  - name: default
+    description: "Tai khoan Supabase chinh"
+    credentials:
+      # Personal Access Token - lay tai https://supabase.com/dashboard/account/tokens
+      accessToken: "YOUR_SUPABASE_PAT"
+    meta:
+      # [OPTIONAL] Organization ID - de trong neu khong dung
+      organization_id: ""
+
+  # Them profile khac neu co nhieu tai khoan
+  # - name: client-abc
+  #   description: "Tai khoan client ABC"
+  #   credentials:
+  #     accessToken: "ANOTHER_TOKEN"
+  #   meta:
+  #     organization_id: "org-xyz"

@@ -7,9 +7,6 @@ const yaml = require('js-yaml');
 const SERVICES_DIR = path.join(process.cwd(), 'services');
 const CONFIGS_DIR  = path.join(process.cwd(), 'configs');
 
-/**
- * List all available services by scanning ./services/*.js
- */
 function listServices() {
   if (!fs.existsSync(SERVICES_DIR)) return [];
   return fs.readdirSync(SERVICES_DIR)
@@ -20,9 +17,6 @@ function listServices() {
     });
 }
 
-/**
- * Load a service plugin module
- */
 function getService(serviceName) {
   const filePath = path.join(SERVICES_DIR, `${serviceName}.js`);
   if (!fs.existsSync(filePath)) {
@@ -31,9 +25,6 @@ function getService(serviceName) {
   return require(filePath);
 }
 
-/**
- * Load config YAML and return the specified profile
- */
 function loadConfig(serviceName, profileName) {
   const configPath = path.join(CONFIGS_DIR, `${serviceName}.yaml`);
   const examplePath = path.join(CONFIGS_DIR, `${serviceName}.example.yaml`);
@@ -69,9 +60,6 @@ function loadConfig(serviceName, profileName) {
   return { config, profile, configPath };
 }
 
-/**
- * List all profiles in a service config
- */
 function listProfiles(serviceName) {
   const configPath = path.join(CONFIGS_DIR, `${serviceName}.yaml`);
   if (!fs.existsSync(configPath)) return [];
@@ -83,9 +71,6 @@ function listProfiles(serviceName) {
   }
 }
 
-/**
- * Execute a single action on a service
- */
 async function executeAction(serviceName, actionName, params, profileConfig, logger) {
   const service = getService(serviceName);
 

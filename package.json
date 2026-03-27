@@ -6,7 +6,8 @@
   "scripts": {
     "start": "node index.js",
     "test": "jest",
-    "export": "node index.js --export-zip"
+    "export": "node index.js --export-zip",
+    "git-opushforce": "git opf"
   },
   "engines": {
     "node": ">=18.0.0"
@@ -25,7 +26,12 @@
   "devDependencies": {
     "jest": "^29.7.0"
   },
-  "keywords": ["cli", "saas", "automation", "task-runner"],
+  "keywords": [
+    "cli",
+    "saas",
+    "automation",
+    "task-runner"
+  ],
   "author": "",
   "license": "MIT"
 }

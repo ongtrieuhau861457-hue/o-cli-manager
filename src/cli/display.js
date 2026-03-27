@@ -3,39 +3,26 @@
 const Table = require('cli-table3');
 const chalk = require('chalk');
 
-/**
- * Hiển thị result table sau khi chạy task
- */
 function showResultTable(opts) {
-  const {
-    taskName  = '',
-    profile   = '',
-    results   = [],
-    totalMs   = 0,
-  } = opts;
-
+  const { taskName = '', profile = '', results = [], totalMs = 0 } = opts;
   const now = new Date().toISOString().replace('T', ' ').substring(0, 19);
   console.log('\n' + chalk.bold(`Task: ${taskName} | Profile: ${profile} | ${now}`));
 
   const table = new Table({
-    head: [
-      chalk.bold('Step'),
-      chalk.bold('Status'),
-      chalk.bold('Duration'),
-      chalk.bold('Output'),
-    ],
+    head: [chalk.bold('Step'), chalk.bold('Status'), chalk.bold('Duration'), chalk.bold('Output')],
     colWidths: [20, 14, 12, 45],
     style: { head: [] },
   });
 
   for (const r of results) {
-    const stepId   = r.stepId || r.action || '?';
+    const stepId   = r.stepId || r.action || r.id || '?';
     const status   = r.status === 'SUCCESS'
-      ? chalk.green('✅ SUCCESS')
+      ? chalk.green('OK SUCCESS')
       : r.status === 'SKIPPED'
-        ? chalk.yellow('⏭  SKIPPED')
-        : chalk.red('❌ FAILED');
-    const duration = r.durationMs != null ? `${r.durationMs.toLocaleString()}ms` : '-';
+        ? chalk.yellow('-- SKIPPED')
+        : chalk.red('XX FAILED');
+    const duration = r.durationMs != null ? `${r.durationMs.toLocaleString()}ms`
+      : r.duration_ms != null ? `${r.duration_ms.toLocaleString()}ms` : '-';
     const output   = summariseOutput(r);
     table.push([stepId, status, duration, output]);
   }
@@ -45,12 +32,11 @@ function showResultTable(opts) {
 }
 
 function summariseOutput(r) {
-  if (r.error)  return chalk.red(truncate(r.error, 40));
+  if (r.error)  return chalk.red(truncate(String(r.error), 40));
   if (!r.output) return r.message ? truncate(r.message, 40) : '-';
   const o = r.output;
   if (Array.isArray(o)) return `${o.length} items`;
   if (typeof o === 'object') {
-    // Show key fields
     const keys = Object.keys(o).slice(0, 3);
     return keys.map((k) => `${k}=${maskIfSensitive(k, o[k])}`).join(', ');
   }
@@ -65,13 +51,10 @@ function maskIfSensitive(key, val) {
 }
 
 function truncate(str, len) {
-  if (str.length <= len) return str;
+  if (!str || str.length <= len) return str;
   return str.substring(0, len - 3) + '...';
 }
 
-/**
- * Hiển thị manual action result table
- */
 function showActionResultTable(results) {
   const table = new Table({
     head: [chalk.bold('Action'), chalk.bold('Status'), chalk.bold('Duration'), chalk.bold('Detail')],
@@ -80,7 +63,7 @@ function showActionResultTable(results) {
   });
 
   for (const r of results) {
-    const status   = r.success ? chalk.green('✅ SUCCESS') : chalk.red('❌ FAILED');
+    const status   = r.success ? chalk.green('OK SUCCESS') : chalk.red('XX FAILED');
     const duration = r.durationMs != null ? `${r.durationMs.toLocaleString()}ms` : '-';
     const detail   = r.message ? truncate(r.message, 42) : '-';
     table.push([r.action || '?', status, duration, detail]);

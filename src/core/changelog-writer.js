@@ -13,17 +13,6 @@ function prependToFile(fp, content) {
   fs.writeFileSync(fp, content + existing, 'utf8');
 }
 
-/**
- * Write protocol files after a task run
- * @param {Object} opts
- * @param {string}   opts.task        - Task name
- * @param {string}   opts.service     - Service name
- * @param {string}   opts.profile     - Profile name
- * @param {Array}    opts.results     - Array of step results
- * @param {string}   opts.status      - 'SUCCESS' | 'PARTIAL' | 'FAILED'
- * @param {number}   opts.totalMs     - Total duration ms
- * @param {string}   [opts.description] - Task description
- */
 function write(opts) {
   const {
     task        = 'unknown-task',
@@ -35,16 +24,19 @@ function write(opts) {
     description = '',
   } = opts;
 
-  const now        = new Date();
-  const dateStr    = now.toISOString().replace('T', ' ').substring(0, 19);
+  const now         = new Date();
+  const dateStr     = now.toISOString().replace('T', ' ').substring(0, 19);
   const durationFmt = totalMs.toLocaleString() + 'ms';
 
-  // Step summary string:  step_id ✅ | step_id2 ❌
   const stepSummary = results
-    .map((r) => `${r.stepId || r.action || '?'} ${r.status === 'SUCCESS' ? '✅' : '❌'}`)
+    .map((r) => {
+      const id = r.stepId || r.id || r.action || '?';
+      if (r.status === 'SUCCESS') return `${id} \u2705`;
+      if (r.status === 'SKIPPED') return `${id} \u23ed`;
+      return `${id} \u274c`;
+    })
     .join(' | ');
 
-  // ─── .opushforce.message (overwrite) ──────────────────────────────────────
   const opushMsg = [
     `[CLI Run] ${service} / ${task} @ ${dateStr}`,
     '',
@@ -54,9 +46,8 @@ function write(opts) {
   ].join('\n');
   fs.writeFileSync(path.join(ROOT, '.opushforce.message'), opushMsg, 'utf8');
 
-  // ─── CHANGE_LOGS.md (prepend) ─────────────────────────────────────────────
   const changeLogEntry = [
-    `## [${dateStr}] ${service} — ${task}`,
+    `## [${dateStr}] ${service} \u2014 ${task}`,
     '',
     `- **Service**: ${service}`,
     `- **Task**: ${task}`,
@@ -70,15 +61,14 @@ function write(opts) {
   ].join('\n');
   prependToFile(path.join(ROOT, 'CHANGE_LOGS.md'), changeLogEntry);
 
-  // ─── CHANGE_LOGS_USER.md (prepend) ────────────────────────────────────────
   const successSteps = results.filter((r) => r.status === 'SUCCESS');
-  const userDesc     = description || `Thực hiện task '${task}' trên ${service}`;
+  const userDesc     = description || `Thuc hien task '${task}' tren ${service}`;
   const userEntry = [
     `## [${dateStr}] ${userDesc}`,
     '',
     status === 'SUCCESS'
-      ? `Đã thực hiện thành công ${successSteps.length}/${results.length} bước trên dịch vụ ${service} với profile '${profile}'.`
-      : `Thực hiện ${successSteps.length}/${results.length} bước thành công. Trạng thái: ${status}.`,
+      ? `Da thuc hien thanh cong ${successSteps.length}/${results.length} buoc tren dich vu ${service} voi profile '${profile}'.`
+      : `Thuc hien ${successSteps.length}/${results.length} buoc thanh cong. Trang thai: ${status}.`,
     '',
     '---',
     '',
@@ -86,4 +76,47 @@ function write(opts) {
   prependToFile(path.join(ROOT, 'CHANGE_LOGS_USER.md'), userEntry);
 }
 
-module.exports = { write };
+async function exportZip() {
+  const archiver = require('archiver');
+  const date = new Date().toISOString().substring(0, 10).replace(/-/g, '');
+  const zipName = `cli-service-manager-${date}.zip`;
+  const zipPath = path.join(ROOT, zipName);
+
+  const output = fs.createWriteStream(zipPath);
+  const archive = archiver('zip', { zlib: { level: 9 } });
+
+  return new Promise((resolve, reject) => {
+    output.on('close', () => {
+      console.log(`[SUCCESS] ZIP tao thanh cong: ${zipName} (${archive.pointer()} bytes)`);
+      resolve(zipPath);
+    });
+    archive.on('error', reject);
+    archive.pipe(output);
+
+    const EXCLUDE_DIRS = ['node_modules', 'logs', 'state', '.git'];
+    const EXCLUDE_PATTERNS = ['configs/*.yaml'];
+
+    function addDir(dirPath, zipBase) {
+      if (!fs.existsSync(dirPath)) return;
+      const entries = fs.readdirSync(dirPath);
+      for (const entry of entries) {
+        if (EXCLUDE_DIRS.includes(entry)) continue;
+        const fullPath = path.join(dirPath, entry);
+        const zipPath2 = path.join(zipBase, entry);
+        const stat = fs.statSync(fullPath);
+        if (stat.isDirectory()) {
+          addDir(fullPath, zipPath2);
+        } else {
+          // Skip configs/*.yaml but keep *.example.yaml
+          if (zipBase.includes('configs') && entry.endsWith('.yaml') && !entry.endsWith('.example.yaml')) continue;
+          archive.file(fullPath, { name: zipPath2 });
+        }
+      }
+    }
+
+    addDir(ROOT, 'cli-service-manager');
+    archive.finalize();
+  });
+}
+
+module.exports = { write, exportZip };

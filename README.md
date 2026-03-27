@@ -1,12 +1,6 @@
 # CLI Service Manager
 
 CLI tool quan ly va thuc thi nghiep vu tren nhieu nen tang SaaS/Cloud thong qua he thong Task Files va Plugin Services.
-Thông tin project:
-
-```
-  name: o-cli-manager
-  description: CLI tools với kiến trúc plugin-based, task-driven, extensible
-```
 
 ## Install
 
@@ -56,8 +50,8 @@ steps:
   - id: step_1
     action: listProjects
     description: "Mo ta step"
-    type: sequential # sequential | parallel
-    on_error: stop # stop | continue | retry:3
+    type: sequential
+    on_error: stop
     params: {}
 
   - id: step_2

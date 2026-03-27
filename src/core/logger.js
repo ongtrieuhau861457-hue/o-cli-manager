@@ -5,14 +5,12 @@ const chalk = require('chalk');
 const path = require('path');
 const fs = require('fs');
 
-// ─── Sensitive field masking ─────────────────────────────────────────────────
 const SENSITIVE_KEYS = ['token', 'key', 'password', 'secret', 'apikey', 'accesstoken', 'access_token', 'api_key'];
 
 function maskSensitive(obj) {
   if (obj === null || obj === undefined) return obj;
   if (typeof obj !== 'object') return obj;
   if (Array.isArray(obj)) return obj.map(maskSensitive);
-
   const result = {};
   for (const [k, v] of Object.entries(obj)) {
     const keyLower = k.toLowerCase().replace(/[_-]/g, '');
@@ -27,7 +25,6 @@ function maskString(str) {
   return str.replace(/\b[A-Za-z0-9_-]{20,}\b/g, (m) => m.substring(0, 4) + '***');
 }
 
-// ─── Log directory setup ─────────────────────────────────────────────────────
 const LOG_DIR = path.resolve(process.cwd(), 'logs');
 
 function ensureLogDir() {
@@ -36,7 +33,6 @@ function ensureLogDir() {
   }
 }
 
-// ─── Colour map ──────────────────────────────────────────────────────────────
 const LEVEL_COLORS = {
   info:    (s) => chalk.cyan(s),
   success: (s) => chalk.green(s),
@@ -53,7 +49,6 @@ const LEVEL_LABELS = {
   debug:   'DEBUG  ',
 };
 
-// ─── Format helpers ───────────────────────────────────────────────────────────
 function ts() {
   return new Date().toISOString().replace('T', ' ').substring(0, 19);
 }
@@ -69,17 +64,16 @@ function formatConsole(level, service, action, message, meta) {
 }
 
 function formatFileLine(level, service, action, status, durationMs, detail) {
-  const levelLabel  = level.toUpperCase().padEnd(7);
-  const svcLabel    = String(service).padEnd(12);
-  const actLabel    = String(action).padEnd(20);
-  const stLabel     = String(status).padEnd(8);
+  const levelLabel = level.toUpperCase().padEnd(7);
+  const svcLabel   = String(service).padEnd(12);
+  const actLabel   = String(action).padEnd(20);
+  const stLabel    = String(status).padEnd(8);
   const parts = [`${ts()}`, levelLabel, svcLabel, actLabel, stLabel];
   if (durationMs != null) parts.push(`duration=${durationMs}ms`);
   if (detail) parts.push(String(detail));
   return parts.join(' | ');
 }
 
-// ─── Winston file logger cache ───────────────────────────────────────────────
 const _cache = {};
 
 function getFileLogger(service) {
@@ -100,7 +94,6 @@ function getFileLogger(service) {
   return fl;
 }
 
-// ─── Core log function ────────────────────────────────────────────────────────
 function log(level, service, action, message, meta) {
   console.log(formatConsole(level, service, action, message, meta));
   try {
@@ -126,7 +119,6 @@ function logResult(level, service, action, status, durationMs, detail) {
   }
 }
 
-// ─── Public API ───────────────────────────────────────────────────────────────
 const logger = {
   info:       (service, action, message, meta) => log('info',    service, action, message, meta),
   success:    (service, action, message, meta) => log('success', service, action, message, meta),

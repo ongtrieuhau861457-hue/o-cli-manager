@@ -8,7 +8,7 @@ logs/
 # State
 state/session.yaml
 
-# Config (sensitive — không ignore example)
+# Config (sensitive)
 configs/*.yaml
 !configs/*.example.yaml
 

@@ -63,7 +63,6 @@ function setServiceState(serviceName, updates) {
 function getLastService() {
   const state = readState();
   if (!state.services) return null;
-  // Find service with most recent last_run_at
   let latest = null;
   let latestTime = null;
   for (const [svc, data] of Object.entries(state.services)) {
@@ -76,11 +75,6 @@ function getLastService() {
 }
 
 module.exports = {
-  readState,
-  writeState,
-  setLastUsed,
-  getLastUsed,
-  getServiceState,
-  setServiceState,
-  getLastService,
+  readState, writeState, setLastUsed, getLastUsed,
+  getServiceState, setServiceState, getLastService,
 };

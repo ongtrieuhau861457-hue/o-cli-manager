@@ -2,10 +2,6 @@
 
 const ora = require('ora');
 
-/**
- * Run multiple async tasks in parallel with progress spinner.
- * Returns array of { label, status, result, error, duration_ms }
- */
 async function runParallel(tasks, spinnerText = 'Dang xu ly song song...') {
   const spinner = ora(spinnerText).start();
   const startTime = Date.now();
@@ -29,13 +25,9 @@ async function runParallel(tasks, spinnerText = 'Dang xu ly song song...') {
   const total = results.length;
 
   spinner.succeed(`Hoan thanh ${successCount}/${total} tasks trong ${totalMs}ms`);
-
   return results;
 }
 
-/**
- * Run a single async operation with a spinner
- */
 async function withSpinner(text, fn) {
   const spinner = ora(text).start();
   try {

@@ -40,17 +40,14 @@ function getProfile(serviceName, profileName) {
 
 function saveProfile(serviceName, profile) {
   if (!profile.name) throw new Error('Profile thieu truong "name"');
-
   let config = readConfig(serviceName) || { service: serviceName, last_used: {}, profiles: [] };
   if (!config.profiles) config.profiles = [];
-
   const idx = config.profiles.findIndex(p => p.name === profile.name);
   if (idx >= 0) {
     config.profiles[idx] = profile;
   } else {
     config.profiles.push(profile);
   }
-
   writeConfig(serviceName, config);
   return profile;
 }
@@ -58,14 +55,11 @@ function saveProfile(serviceName, profile) {
 function deleteProfile(serviceName, profileName) {
   const config = readConfig(serviceName);
   if (!config || !config.profiles) throw new Error(`Khong tim thay config ${serviceName}`);
-
   const before = config.profiles.length;
   config.profiles = config.profiles.filter(p => p.name !== profileName);
-
   if (config.profiles.length === before) {
     throw new Error(`Profile '${profileName}' khong ton tai`);
   }
-
   writeConfig(serviceName, config);
 }
 
@@ -76,11 +70,6 @@ function updateLastUsed(serviceName, updates) {
   writeConfig(serviceName, config);
 }
 
-/**
- * Validate required fields in a profile
- * @param {object} profile
- * @param {string[]} requiredFields - list of required field paths like ['credentials.accessToken']
- */
 function validateProfile(profile, requiredFields = []) {
   const errors = [];
   for (const fieldPath of requiredFields) {
@@ -96,7 +85,6 @@ function validateProfile(profile, requiredFields = []) {
   return errors;
 }
 
-// Mask sensitive fields for display (NOT for file write)
 const SENSITIVE_PATTERNS = [/token/i, /key/i, /password/i, /secret/i, /apikey/i, /accesstoken/i];
 
 function maskForDisplay(obj, depth = 0) {
@@ -116,13 +104,6 @@ function maskForDisplay(obj, depth = 0) {
 }
 
 module.exports = {
-  readConfig,
-  writeConfig,
-  listProfiles,
-  getProfile,
-  saveProfile,
-  deleteProfile,
-  updateLastUsed,
-  validateProfile,
-  maskForDisplay,
+  readConfig, writeConfig, listProfiles, getProfile,
+  saveProfile, deleteProfile, updateLastUsed, validateProfile, maskForDisplay,
 };
