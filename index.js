@@ -1,12 +1,10 @@
 'use strict';
 
-// Node version check
 const nodeVersion = process.version;
 if (parseInt(nodeVersion.slice(1)) < 18) {
   console.warn('[WARN] Node.js < 18 detected. Some features may not work correctly.');
 }
 
-// Handle Ctrl+C gracefully
 process.on('SIGINT', () => {
   const ts = new Date().toISOString();
   console.log(`\n[INFO] Da thoat luc ${ts}`);

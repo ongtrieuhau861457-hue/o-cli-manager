@@ -1,24 +1,11 @@
-# Dependencies
 node_modules/
-
-# Logs
 logs/
 *.log
-
-# State
 state/session.yaml
-
-# Config (sensitive)
 configs/*.yaml
 !configs/*.example.yaml
-
-# Export
 *.zip
-
-# OS
 .DS_Store
 Thumbs.db
-
-# Env
 .env
 .env.*

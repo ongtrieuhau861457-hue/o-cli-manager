@@ -26,7 +26,7 @@ function getService(serviceName) {
 }
 
 function loadConfig(serviceName, profileName) {
-  const configPath = path.join(CONFIGS_DIR, `${serviceName}.yaml`);
+  const configPath  = path.join(CONFIGS_DIR, `${serviceName}.yaml`);
   const examplePath = path.join(CONFIGS_DIR, `${serviceName}.example.yaml`);
 
   if (!fs.existsSync(configPath)) {
@@ -78,13 +78,13 @@ async function executeAction(serviceName, actionName, params, profileConfig, log
     throw new Error(`Action '${actionName}' khong tim thay trong service '${serviceName}'`);
   }
 
-  const action = service.actions[actionName];
+  const action    = service.actions[actionName];
   const startTime = Date.now();
 
   logger.info(serviceName, actionName, 'START', { profile: profileConfig.name });
 
   try {
-    const result = await action.execute(profileConfig, params, logger);
+    const result     = await action.execute(profileConfig, params, logger);
     const duration_ms = Date.now() - startTime;
 
     if (result && result.success) {

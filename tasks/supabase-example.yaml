@@ -1,0 +1,37 @@
+name: supabase-inspect-account
+description: "Kiem tra toan bo tai khoan Supabase: list projects, lay API keys, demo parallel & context"
+service: supabase
+version: "1.0.0"
+
+steps:
+  # Step 1 — Sequential: lay danh sach projects (context source)
+  - id: list_projects
+    action: listProjects
+    description: "Lay danh sach tat ca projects trong tai khoan"
+    type: sequential
+    on_error: stop
+    params: {}
+
+  # Step 2 — Sequential: lay API keys cua project dau tien (dung context tu step 1)
+  - id: get_keys_first
+    action: getProjectApiKeys
+    description: "Lay API keys cua project dau tien"
+    type: sequential
+    on_error: continue
+    params:
+      project_ref: "{{ steps.list_projects.output.data[0].id }}"
+
+  # Steps 3 & 4 — Parallel: chay dong thoi, demo parallel group
+  - id: list_projects_again
+    action: listProjects
+    description: "List projects lan 2 (parallel demo)"
+    type: parallel
+    on_error: continue
+    params: {}
+
+  - id: list_projects_verify
+    action: listProjects
+    description: "List projects lan 3 de verify (parallel demo)"
+    type: parallel
+    on_error: continue
+    params: {}

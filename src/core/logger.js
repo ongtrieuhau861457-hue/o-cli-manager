@@ -28,9 +28,7 @@ function maskString(str) {
 const LOG_DIR = path.resolve(process.cwd(), 'logs');
 
 function ensureLogDir() {
-  if (!fs.existsSync(LOG_DIR)) {
-    fs.mkdirSync(LOG_DIR, { recursive: true });
-  }
+  if (!fs.existsSync(LOG_DIR)) fs.mkdirSync(LOG_DIR, { recursive: true });
 }
 
 const LEVEL_COLORS = {

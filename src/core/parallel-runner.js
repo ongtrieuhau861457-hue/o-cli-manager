@@ -3,7 +3,7 @@
 const ora = require('ora');
 
 async function runParallel(tasks, spinnerText = 'Dang xu ly song song...') {
-  const spinner = ora(spinnerText).start();
+  const spinner   = ora(spinnerText).start();
   const startTime = Date.now();
 
   const promises = tasks.map(async ({ label, fn }) => {
@@ -19,12 +19,14 @@ async function runParallel(tasks, spinnerText = 'Dang xu ly song song...') {
   const settled = await Promise.allSettled(promises);
   const totalMs = Date.now() - startTime;
 
-  const results = settled.map(s => s.status === 'fulfilled' ? s.value : { label: '?', status: 'rejected', error: s.reason, duration_ms: 0 });
+  const results = settled.map(s =>
+    s.status === 'fulfilled'
+      ? s.value
+      : { label: '?', status: 'rejected', error: s.reason, duration_ms: 0 }
+  );
 
   const successCount = results.filter(r => r.status === 'fulfilled').length;
-  const total = results.length;
-
-  spinner.succeed(`Hoan thanh ${successCount}/${total} tasks trong ${totalMs}ms`);
+  spinner.succeed(`Hoan thanh ${successCount}/${results.length} tasks trong ${totalMs}ms`);
   return results;
 }
 

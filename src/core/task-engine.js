@@ -98,11 +98,12 @@ function listTasks() {
 }
 
 async function executeStep(step, profile, context, logger) {
-  const startTime = Date.now();
-  const retryMatch = (step.on_error || '').match(/^retry:(\d+)$/);
-  const maxRetries = retryMatch ? parseInt(retryMatch[1]) : 0;
-  let lastError = null;
-  let attempt = 0;
+  const startTime   = Date.now();
+  const retryMatch  = (step.on_error || '').match(/^retry:(\d+)$/);
+  const maxRetries  = retryMatch ? parseInt(retryMatch[1]) : 0;
+  let lastError     = null;
+  let attempt       = 0;
+
   while (attempt <= maxRetries) {
     if (attempt > 0) {
       logger.warn(step.action, step.id, `Retry lan ${attempt}/${maxRetries}...`);
@@ -115,6 +116,7 @@ async function executeStep(step, profile, context, logger) {
       const duration_ms = Date.now() - startTime;
       return {
         id: step.id,
+        stepId: step.id,
         status: result.success ? 'SUCCESS' : 'FAILED',
         duration_ms,
         output: result,
@@ -126,9 +128,11 @@ async function executeStep(step, profile, context, logger) {
       if (attempt > maxRetries) break;
     }
   }
+
   const duration_ms = Date.now() - startTime;
   return {
     id: step.id,
+    stepId: step.id,
     status: 'FAILED',
     duration_ms,
     output: { success: false, data: null, message: lastError ? lastError.message : 'Unknown error' },
@@ -137,12 +141,13 @@ async function executeStep(step, profile, context, logger) {
 }
 
 async function run(taskObj, profile, logger) {
-  const context = { steps: {} };
-  const results = [];
+  const context   = { steps: {} };
+  const results   = [];
   const startTime = Date.now();
 
   logger.info(profile._serviceName || 'system', 'task', `Bat dau task: ${taskObj.name}`);
 
+  // Group steps into sequential/parallel batches
   const groups = [];
   let i = 0;
   while (i < taskObj.steps.length) {
@@ -165,7 +170,11 @@ async function run(taskObj, profile, logger) {
   for (const group of groups) {
     if (shouldStop) {
       for (const step of group.steps) {
-        results.push({ id: step.id, status: 'SKIPPED', duration_ms: 0, message: 'Bi bo qua do step truoc that bai' });
+        results.push({
+          id: step.id, stepId: step.id,
+          status: 'SKIPPED', duration_ms: 0,
+          message: 'Bi bo qua do step truoc that bai',
+        });
       }
       continue;
     }
@@ -175,11 +184,11 @@ async function run(taskObj, profile, logger) {
         group.steps.map(step => executeStep(step, profile, context, logger))
       );
       for (let j = 0; j < group.steps.length; j++) {
-        const step = group.steps[j];
-        const settled = parallelResults[j];
+        const step     = group.steps[j];
+        const settled  = parallelResults[j];
         const stepResult = settled.status === 'fulfilled'
           ? settled.value
-          : { id: step.id, status: 'FAILED', duration_ms: 0, message: settled.reason && settled.reason.message };
+          : { id: step.id, stepId: step.id, status: 'FAILED', duration_ms: 0, message: settled.reason && settled.reason.message };
         results.push(stepResult);
         context.steps[step.id] = { output: stepResult.output };
         if (stepResult.status === 'FAILED' && (!step.on_error || step.on_error === 'stop')) {
@@ -188,7 +197,7 @@ async function run(taskObj, profile, logger) {
         }
       }
     } else {
-      const step = group.steps[0];
+      const step       = group.steps[0];
       const stepResult = await executeStep(step, profile, context, logger);
       results.push(stepResult);
       context.steps[step.id] = { output: stepResult.output };
@@ -205,7 +214,7 @@ async function run(taskObj, profile, logger) {
   }
 
   const totalDuration = Date.now() - startTime;
-  const allSuccess = results.every(r => r.status === 'SUCCESS' || r.status === 'SKIPPED');
+  const allSuccess    = results.every(r => r.status === 'SUCCESS' || r.status === 'SKIPPED');
 
   logger.info(profile._serviceName || 'system', 'task',
     `Ket thuc task: ${taskObj.name} | ${allSuccess ? 'SUCCESS' : 'PARTIAL/FAILED'} | ${totalDuration}ms`);

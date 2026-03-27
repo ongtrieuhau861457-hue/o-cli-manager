@@ -7,7 +7,7 @@
     "start": "node index.js",
     "test": "jest",
     "export": "node index.js --export-zip",
-    "git-opushforce": "git opf"
+    "git-opushforce": "git opushforce"
   },
   "engines": {
     "node": ">=18.0.0"
